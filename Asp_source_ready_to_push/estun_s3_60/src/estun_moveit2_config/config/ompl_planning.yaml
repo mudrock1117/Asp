@@ -1,0 +1,60 @@
+planning_pipelines:
+  ompl:
+    pipeline_id: ompl
+    planning_plugins:
+      - "ompl_interface/OMPLPlanner"
+    request_adapters:
+      - "default_planning_request_adapters/ResolveConstraintFrames"
+      - "default_planning_request_adapters/ValidateWorkspaceBounds"
+      - "default_planning_request_adapters/CheckStartStateBounds"
+      - "default_planning_request_adapters/CheckStartStateInCollision"
+      - "default_planning_request_adapters/AddTimeOptimalParameterization"
+    response_adapters:
+      - "default_planning_response_adapters/ValidateSolution"
+      - "default_planning_response_adapters/AddTimeParameterization"
+
+# OMPL规划器配置
+ompl:
+  # 全局规划参数
+  planning_time: 10.0                    # 增加规划时间
+  max_velocity_scaling_factor: 0.8       # 提高速度限制
+  max_acceleration_scaling_factor: 0.6   # 提高加速度限制
+  simplify_solutions: true               # 简化轨迹
+  interpolate: true                      # 启用插值
+  hybridize: true                        # 启用混合轨迹
+  
+  # RRTConnect配置（最常用）
+  RRTConnect:
+    type: geometric::RRTConnect
+    range: 0.05                          # 减小步长，增加采样密度
+    intermediate_states: true            # 生成中间状态
+    
+  # RRTstar配置（更平滑）
+  RRTstar:
+    type: geometric::RRTstar
+    range: 0.05
+    goal_bias: 0.05
+    delay_collision_checking: 1
+    
+  # LBKPIECE配置
+  LBKPIECE:
+    type: geometric::LBKPIECE
+    range: 0.1
+    border_fraction: 0.9
+    min_valid_path_fraction: 0.5
+    
+  # 默认规划器
+  default_planner_config: RRTConnect
+
+# 时间参数化配置（关键！）
+add_time_parameterization:
+  ros__parameters:
+    sample_density: 50.0        # 大幅增加采样密度
+    interpolation_dt: 0.005      # 减小插值间隔到5ms
+    min_points: 10              # 最小轨迹点数
+
+# 规划请求适配器
+resample:
+  ros__parameters:
+    resample_interval: 0.005     # 重采样间隔
+    min_angle_change: 0.01       # 最小角度变化
